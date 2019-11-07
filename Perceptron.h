@@ -12,7 +12,7 @@ private:
     
 public:
     Perceptron(float treshold, float learning_rate, float bias);
-    void fit(float data, int labels, int iterations);
+    void fit();
     int predict(at::Tensor data);        
     torch::data::Example<> clean_data();
 

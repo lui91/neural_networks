@@ -3,31 +3,43 @@
 using namespace at;
 using namespace std;
 
-
-struct Data{
-    Tensor labels;
-    Tensor imgs;
-};
-
 Perceptron::Perceptron(float treshold, float learning_rate, float bias){
     setTreshold(treshold);
     setLearning_Rate(learning_rate);
     setBias(bias);
-    Tensor r = rand(30);
+    torch::Tensor r = rand(784);
     setW(r);
 }
 
-void Perceptron::fit(float data, int labels, int iterations){
-    for (size_t i = 0; i < getTreshold(); i++)
-    {
-        
-    }
-    
+void Perceptron::fit(){
+    auto data_loader = torch::data::make_data_loader(
+        torch::data::datasets::MNIST("./data").map(
+            torch::data::transforms::Stack<>()),
+            torch::data::DataLoaderOptions().batch_size(5).workers(8));
 
+   for (torch::data::Example<> &batch : *data_loader)
+    {
+        for (int64_t i = 0; i < batch.data.size(0); ++i)
+        {
+            int label = batch.target[i].item<int64_t>(); 
+            if(label == 0 || label == 1) {
+                Tensor input = batch.data[i][0].flatten();
+                int prediction = predict(input);
+                Tensor update_weights =+ getLearning_Rate() * (label - prediction) * input;
+                setW(update_weights);
+                int update_bias =+ getLearning_Rate() * (label - prediction);
+                setBias(update_bias);
+                cout << "label |" << label << " prediction | " << prediction << endl;
+            }
+        }
+    }
 }
 
 int Perceptron::predict(Tensor data){
-    Tensor prediction = dot(data, Perceptron::getW());
+    cout << "sample: " << data.sizes() << endl;
+    cout << "weights: " << getW().transpose(0,-1).sizes() << endl;
+    // torch::print(cout, data, 99);
+    Tensor prediction = dot(data, getW().transpose(0,-1));
     int relu = relu_derivative(prediction.item().toFloat());
     return relu;
 }
@@ -38,8 +50,8 @@ int Perceptron::relu_derivative(float x){
 }
 
 torch::data::Example<>  Perceptron::clean_data(){
-    Tensor data = torch::rand({28,28});
-    Tensor labels;
+    Tensor data = torch::rand({784});
+    // Tensor labels;
 
     auto data_loader = torch::data::make_data_loader(
         torch::data::datasets::MNIST("./data").map(
@@ -54,10 +66,15 @@ torch::data::Example<>  Perceptron::clean_data(){
         {
             // batch.target[i] = NULL;
             // cout << batch.target[i] << " ";
-            
-            labels = torch::cat({data, batch.data[i][0]}, 0);            
-            // cout << batch.data[i] << " ";
-            cout << labels << endl;
+            // if(batch.target[i].item() > 0) {
+
+                // labels = torch::cat({data, batch.data[i][0].flatten()}, 0);   
+                
+                  
+                int bar = batch.target[i].item<int64_t>(); 
+                cout << bar << " |";
+                // cout << labels << endl;
+            // }
         }
         
         std::cout << "size: " << std::endl;
