@@ -14,7 +14,8 @@ public:
     Perceptron(float treshold, float learning_rate, float bias);
     void fit();
     int predict(at::Tensor data);        
-    torch::data::Example<> clean_data();
+    void clean_data(torch::Tensor& train_imgs_pointer, torch::Tensor &train_labels_pointer
+    , torch::Tensor &test_imgs_pointer, torch::Tensor &test_labels_pointer);
 
     //member functions
     at::Tensor getW();

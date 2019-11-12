@@ -7,7 +7,7 @@ Perceptron::Perceptron(float treshold, float learning_rate, float bias){
     setTreshold(treshold);
     setLearning_Rate(learning_rate);
     setBias(bias);
-    torch::Tensor r = rand(784);
+    torch::Tensor r = torch::rand(784);
     setW(r);
 }
 
@@ -16,7 +16,7 @@ void Perceptron::fit(){
         torch::data::datasets::MNIST("./data").map(
             torch::data::transforms::Stack<>()),
             torch::data::DataLoaderOptions().batch_size(5).workers(8));
-
+    print(cout, getW(), 99);
    for (torch::data::Example<> &batch : *data_loader)
     {
         for (int64_t i = 0; i < batch.data.size(0); ++i)
@@ -29,17 +29,20 @@ void Perceptron::fit(){
                 setW(update_weights);
                 int update_bias =+ getLearning_Rate() * (label - prediction);
                 setBias(update_bias);
-                cout << "label |" << label << " prediction | " << prediction << endl;
+                // cout << "label |" << label << " prediction | " << prediction << endl;
             }
         }
     }
+    print(cout, getW(), 99);
+    cout << "Perceptron fitted" << endl;
 }
 
 int Perceptron::predict(Tensor data){
-    cout << "sample: " << data.sizes() << endl;
-    cout << "weights: " << getW().transpose(0,-1).sizes() << endl;
+    // cout << "sample: " << data.sizes() << endl;
+    // cout << "weights: " << getW().transpose(0,-1).sizes() << endl;
     // torch::print(cout, data, 99);
-    Tensor prediction = dot(data, getW().transpose(0,-1));
+    auto prediction = dot(data, getW());
+
     int relu = relu_derivative(prediction.item().toFloat());
     return relu;
 }
@@ -49,39 +52,51 @@ int Perceptron::relu_derivative(float x){
     else if (x > 0) return 1;
 }
 
-torch::data::Example<>  Perceptron::clean_data(){
-    Tensor data = torch::rand({784});
-    // Tensor labels;
+void Perceptron::clean_data(torch::Tensor &train_imgs_pointer, torch::Tensor &train_labels_pointer,
+ torch::Tensor &test_imgs_pointer, torch::Tensor &test_labels_pointer){
 
     auto data_loader = torch::data::make_data_loader(
         torch::data::datasets::MNIST("./data").map(
             torch::data::transforms::Stack<>()),
             torch::data::DataLoaderOptions().batch_size(5).workers(8));
 
+    // 5923
+    // torch::Tensor zero_labels ;
+    // 6742
+    // torch::Tensor one_labels;
+
+    torch::Tensor train_imgs = torch::rand(784);
+    std::vector <int64_t> train_vector;
+    torch::Tensor test_imgs =  torch::rand(784);
+    std::vector <int64_t> test_vector;
+    int cont = 0;
     for (torch::data::Example<> &batch : *data_loader)
     {
-        
-        // std::cout << "Batch size: " << batch.data.size(0) << " | Labels: ";
         for (int64_t i = 0; i < batch.data.size(0); ++i)
         {
-            // batch.target[i] = NULL;
-            // cout << batch.target[i] << " ";
-            // if(batch.target[i].item() > 0) {
+            int label = batch.target[i].item<int64_t>(); 
+            Tensor input = batch.data[i][0].flatten();
+            if((label == 0 || label == 1) && cont < 9000) {
+                train_imgs = torch::cat({train_imgs, input}, 0);
+                train_vector.push_back(label);
+                cont =+ cont + 1;
+            }
 
-                // labels = torch::cat({data, batch.data[i][0].flatten()}, 0);   
-                
-                  
-                int bar = batch.target[i].item<int64_t>(); 
-                cout << bar << " |";
-                // cout << labels << endl;
-            // }
-        }
-        
-        std::cout << "size: " << std::endl;
-        
+            if((label == 0 || label == 1) && cont >= 9000) {
+                test_imgs = torch::cat({test_imgs, input}, 0);
+                test_vector.push_back(label);
+                cont =+ cont + 1;
+            }
+
+        } 
     }
-    
 
+    torch::Tensor train_labels = torch::tensor(train_vector);
+    torch::Tensor test_labels = torch::tensor(test_vector);
+    train_imgs_pointer = train_imgs;
+    train_labels_pointer = train_labels;
+    test_imgs_pointer = test_imgs;
+    test_labels_pointer = test_labels;
 }
 
 //Member methods definition
