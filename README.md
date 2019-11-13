@@ -1,3 +1,3 @@
 # neural_networks
 
-Neural networks course exercise pytorch implementation.
+Neural networks course exercise pytorch c++ implementation.
