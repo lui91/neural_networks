@@ -4,19 +4,19 @@
 class Perceptron
 {
 private:
-    at::Tensor w;
+    torch::Tensor w;
     float treshold;
     float learning_rate;
     float bias;
     int relu_derivative(float x);
     
 public:
-    Perceptron(float treshold, float learning_rate, float bias);
-    void fit(torch::Tensor &train_imgs_pointer, torch::Tensor &train_labels_pointer);
-    int predict(at::Tensor data);        
+    Perceptron(float treshold, float learning_rate, int neurons);
+    void fit(int train);
+    int predict(torch::Tensor data);        
     void clean_data(torch::Tensor& train_imgs_pointer, torch::Tensor &train_labels_pointer
     , torch::Tensor &test_imgs_pointer, torch::Tensor &test_labels_pointer);
-    void test(torch::Tensor test_imgs_pointer, torch::Tensor test_labels_pointer);
+    void test();
 
     //member functions
     at::Tensor getW();
