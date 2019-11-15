@@ -8,7 +8,7 @@ private:
     float treshold;
     float learning_rate;
     float bias;
-    int relu_derivative(float x);
+    
     
 public:
     Perceptron(float treshold, float learning_rate, int neurons);
@@ -17,6 +17,11 @@ public:
     void clean_data(torch::Tensor& train_imgs_pointer, torch::Tensor &train_labels_pointer
     , torch::Tensor &test_imgs_pointer, torch::Tensor &test_labels_pointer);
     void test();
+    void test_second_layer(Perceptron p);
+    int ReLU(float x);
+    float Sig(float x);
+    float Tanh(float x);
+    void fit_second_level(Perceptron p);
 
     //member functions
     at::Tensor getW();
